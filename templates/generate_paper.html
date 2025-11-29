@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>生成试卷</h2>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="paper-generator">
+    <div class="instructions">
+        <h3>生成说明</h3>
+        <ul>
+            <li>系统将根据设定的题型和数量，从所选题库中随机抽取题目</li>
+            <li>支持名词解释、简答和论述三种主要题型</li>
+            <li>可设置难度级别，控制题目难度分布</li>
+            <li>生成的试卷将自动保存，可在"我的试卷"中查看</li>
+        </ul>
+    </div>
+    
+    <form method="POST" class="paper-form">
+        <div class="form-group">
+            <label>试卷标题</label>
+            <input type="text" name="title" value="土壤学考研模拟试卷" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>总分</label>
+            <input type="number" name="total_points" value="100" min="10" max="200" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>考试时间</label>
+            <input type="text" name="time_limit" value="120分钟" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>选择题库 (可多选)</label>
+            <select name="library_ids" multiple class="form-control" required style="height: 150px;">
+                {% for lib in libraries %}
+                <option value="{{ lib.id }}">{{ lib.name }} {% if lib.description %}({{ lib.description }}){% endif %}</option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">按住Ctrl键可多选</small>
+        </div>
+        
+        <div class="form-group">
+            <label>难度级别</label>
+            <select name="difficulty" class="form-control">
+                <option value="all">全部难度</option>
+                <option value="1">简单 (★☆☆)</option>
+                <option value="2" selected>中等 (★★☆)</option>
+                <option value="3">困难 (★★★)</option>
+            </select>
+        </div>
+        
+        <h3>题型与数量设置</h3>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label>名词解释题</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" name="noun_count" value="5" min="0" max="20" class="form-control" placeholder="数量">
+                    <input type="number" name="noun_points" value="4" min="1" max="20" class="form-control" placeholder="每题分值">
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                <label>简答题</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" name="short_count" value="5" min="0" max="15" class="form-control" placeholder="数量">
+                    <input type="number" name="short_points" value="10" min="1" max="30" class="form-control" placeholder="每题分值">
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                <label>论述题</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" name="essay_count" value="2" min="0" max="10" class="form-control" placeholder="数量">
+                    <input type="number" name="essay_points" value="20" min="1" max="50" class="form-control" placeholder="每题分值">
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-notes">
+            <p><strong>分值分配说明:</strong></p>
+            <ul>
+                <li>系统会根据设置的数量和每题分值自动计算总分</li>
+                <li>如果计算总分与设定总分不符，系统会提示调整</li>
+                <li>建议合理分配各题型分值，确保总分为整数</li>
+            </ul>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block">生成试卷</button>
+    </form>
+</div>
+
+<style>
+    .paper-generator {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    
+    .instructions {
+        background-color: #e8f5e9;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #c8e6c9;
+    }
+    
+    .paper-form {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -15px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        min-width: 200px;
+        padding: 0 15px;
+        margin-bottom: 15px;
+    }
+    
+    .settings-notes {
+        background-color: #e3f2fd;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 15px;
+        font-size: 0.95em;
+    }
+    
+    .btn-primary {
+        background-color: #1e5799;
+        border-color: #1e5799;
+    }
+    
+    .btn-primary:hover {
+        background-color: #16406c;
+        border-color: #113352;
+    }
+    
+    @media (max-width: 768px) {
+        .paper-generator {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
