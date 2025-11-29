@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>在线提交题库</h2>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="upload-container">
+    <div class="upload-instructions">
+        <h3>使用说明</h3>
+        <ol>
+            <li>请使用Markdown格式直接输入题库内容</li>
+            <li>系统会自动识别题目类型（名词解释、简答题、论述题等）</li>
+            <li>每个题目应包含问题和答案两部分</li>
+            <li>支持Markdown格式的标题、列表、强调等语法</li>
+        </ol>
+        
+        <div class="template-preview">
+            <h4>Markdown格式示例：</h4>
+            <pre>
+# 土壤学期末考试题库
+
+## 第一章 土壤基本性质
+
+### 名词解释
+
+1. 土壤有机质
+   **答案：** 土壤有机质是土壤中有机物质的总称，包括动植物残体、微生物体及其分解和合成的有机物质。
+
+### 简答题
+
+2. 简述土壤质地的分类及其特性。
+   **答案：** 土壤质地分为砂土、壤土和黏土三类。
+   - 砂土：孔隙度大，透气性好，但保水保肥能力差
+   - 壤土：孔隙度适中，透气性和保水保肥能力都较好
+   - 黏土：孔隙度小，保水保肥能力强，但透气性差
+
+### 论述题
+
+3. 详细论述土壤pH值对植物生长的影响。
+   **答案：** 土壤pH值对植物生长的影响主要体现在以下几个方面：
+   1. 影响养分有效性：不同pH值下，土壤养分的有效性不同
+   2. 影响微生物活动：微生物的适宜pH范围各不相同
+   3. 影响植物生长：不同植物对pH值有不同的适应性
+   4. 影响有毒物质的含量：某些pH条件下可能产生有害物质
+            </pre>
+        </div>
+    </div>
+    
+    <form method="POST" class="upload-form">
+        <div class="form-group">
+            <label for="library_name">题库名称 <span style="color: red">*</span></label>
+            <input type="text" id="library_name" name="library_name" class="form-control" 
+                   placeholder="例如：土壤学原理题库2023" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">题库描述</label>
+            <textarea id="description" name="description" class="form-control" rows="3"
+                      placeholder="可选，填写题库相关信息，如年份、类型、重点等"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="question_type">题目类型（可选，未选择时自动识别）</label>
+            <select id="question_type" name="question_type" class="form-control">
+                <option value="">自动识别</option>
+                <option value="名词解释">名词解释</option>
+                <option value="简答题">简答题</option>
+                <option value="论述题">论述题</option>
+                <option value="填空题">填空题</option>
+                <option value="选择题">选择题</option>
+                <option value="判断题">判断题</option>
+                <option value="问答题">问答题</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="content">题库内容（Markdown格式） <span style="color: red">*</span></label>
+            <div class="markdown-editor">
+                <textarea id="content" name="content" class="form-control markdown-textarea" rows="20" 
+                          placeholder="请在此输入Markdown格式的题库内容..." required></textarea>
+                <div class="markdown-toolbar">
+                    <button type="button" onclick="insertText('# ', '标题');" title="一级标题">H1</button>
+                    <button type="button" onclick="insertText('## ', '标题');" title="二级标题">H2</button>
+                    <button type="button" onclick="insertText('### ', '标题');" title="三级标题">H3</button>
+                    <button type="button" onclick="insertText('- ', '列表项');" title="无序列表">•</button>
+                    <button type="button" onclick="insertText('1. ', '列表项');" title="有序列表">1.</button>
+                    <button type="button" onclick="insertText('**', '强调文本', '**');" title="加粗">B</button>
+                    <button type="button" onclick="insertText('*', '强调文本', '*');" title="斜体">I</button>
+                    <button type="button" onclick="insertText('\n---\n', '分隔线');" title="分隔线">---</button>
+                    <button type="button" onclick="insertText('**答案：** ', '答案内容');" title="答案">答案</button>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-block">提交题库</button>
+    </form>
+</div>
+
+<script>
+    // 简单的Markdown编辑器功能
+    function insertText(prefix, placeholder, suffix = '') {
+        const textarea = document.getElementById('content');
+        const startPos = textarea.selectionStart;
+        const endPos = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(startPos, endPos);
+        
+        const replacement = prefix + (selectedText || placeholder) + suffix;
+        textarea.value = textarea.value.substring(0, startPos) + replacement + textarea.value.substring(endPos);
+        
+        // 将光标移动到适当位置
+        if (selectedText) {
+            textarea.selectionStart = startPos + replacement.length;
+            textarea.selectionEnd = startPos + replacement.length;
+        } else {
+            textarea.selectionStart = startPos + prefix.length;
+            textarea.selectionEnd = startPos + prefix.length + placeholder.length;
+        }
+        
+        textarea.focus();
+    }
+</script>
+
+<style>
+    .upload-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    
+    .upload-instructions {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .upload-form {
+        background-color: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .template-preview {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        font-family: monospace;
+        font-size: 0.95em;
+        line-height: 1.5;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    /* Markdown编辑器样式 */
+    .markdown-editor {
+        position: relative;
+    }
+    
+    .markdown-textarea {
+        font-family: monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        width: 100%;
+        resize: vertical;
+        min-height: 300px;
+    }
+    
+    .markdown-toolbar {
+        position: absolute;
+        top: -35px;
+        left: 0;
+        right: 0;
+        background-color: #f0f0f0;
+        padding: 5px;
+        border-radius: 4px 4px 0 0;
+        border: 1px solid #ddd;
+        border-bottom: none;
+    }
+    
+    .markdown-toolbar button {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 3px 8px;
+        margin: 0 2px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    
+    .markdown-toolbar button:hover {
+        background-color: #e9ecef;
+    }
+    
+    @media (max-width: 768px) {
+        .upload-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    pre {
+        white-space: pre-wrap;
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .upload-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
